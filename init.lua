@@ -110,6 +110,10 @@ vim.o.mouse = 'a'
 -- Don't show the mode, since it's already in the status line
 vim.o.showmode = false
 
+-- tab size
+vim.opt.shiftwidth = 4
+vim.opt.tabstop = 4
+
 -- Sync clipboard between OS and Neovim.
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
 --  Remove this option if you want your OS clipboard to remain independent.
@@ -407,12 +411,23 @@ require('lazy').setup({
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
-        -- pickers = {}
+        defaults = {
+          -- NodeJS projects (non-kickstart-default)
+          file_ignore_patterns = {
+            '^dist/',
+            '^node_modules/',
+          },
+          -- mappings = {
+          --   i = { ['<c-enter>'] = 'to_fuzzy_refine' },
+          -- },
+        },
+        pickers = {
+          diagnostics = {
+            -- Set line_width to 0 to disable truncation and show full messages
+            line_width = 0,
+            -- You can also adjust other options like layout_strategy, layout_config, etc.
+          },
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
@@ -588,11 +603,7 @@ require('lazy').setup({
           ---@param bufnr? integer some lsp support methods only in specific files
           ---@return boolean
           local function client_supports_method(client, method, bufnr)
-            if vim.fn.has 'nvim-0.11' == 1 then
-              return client:supports_method(method, bufnr)
-            else
-              return client.supports_method(method, { bufnr = bufnr })
-            end
+            return client:supports_method(method, bufnr)
           end
 
           -- The following two autocommands are used to highlight references of the
@@ -682,7 +693,7 @@ require('lazy').setup({
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         -- clangd = {},
-        -- gopls = {},
+        gopls = {},
         -- pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
@@ -692,7 +703,6 @@ require('lazy').setup({
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         -- ts_ls = {},
-        --
 
         terraformls = {},
 
@@ -734,6 +744,7 @@ require('lazy').setup({
       require('mason-lspconfig').setup {
         ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
         automatic_installation = false,
+        automatic_enable = {},
         handlers = {
           function(server_name)
             local server = servers[server_name] or {}
@@ -897,9 +908,32 @@ require('lazy').setup({
     config = function()
       vim.g.gruvbox_material_enable_italic_comment = 1
       require('gruvbox-material').setup {}
-      vim.cmd.colorscheme 'gruvbox-material'
+      -- vim.cmd.colorscheme 'gruvbox-material'
     end,
   },
+
+  {
+    'neanias/everforest-nvim',
+    version = false,
+    priority = 1000,
+    version = false,
+    config = function()
+      require('everforest').setup {
+        background = 'soft', -- options: "soft" "medium" "hard". Default is medium.
+        ui_contrast = 'low', -- options: "high" "low". Default is "low".
+      }
+    end,
+  },
+
+  {
+    'AlexvZyl/nordic.nvim',
+    lazy = false,
+    priority = 1000,
+    config = function()
+      require('nordic').load()
+    end,
+  },
+
   --[[
   { -- You can easily change to a different colorscheme.
     -- Change the name of the colorscheme plugin below, and then
@@ -1040,3 +1074,5 @@ require('lazy').setup({
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+
+vim.cmd.colorscheme 'nordic' -- options: 'everforest' 'gruvbox-material'
